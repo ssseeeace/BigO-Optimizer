@@ -1,0 +1,105 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Optimizer</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+
+    <div class="container">
+        <h2 class="text-center mb-5">Code Optimizer</h2>
+
+        <form id="codeForm">
+            <div class="form-group">
+                <label for="code">Enter your code:</label>
+                <textarea class="form-control" id="code" rows="5" required></textarea>
+            </div>
+
+            <label for="bigO">Desired Big O:</label>
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <select class="form-control" id="bigO" required>
+                        <option value="">Select Complexity</option>
+                        <option value="O(1)">O(1)</option>
+                        <option value="O(log n)">O(log n)</option>
+                        <option value="O(n)">O(n)</option>
+                        <option value="O(n log n)">O(n log n)</option>
+                        <option value="O(n^2)">O(n^2)</option>
+                        <option value="O(2^n)">O(2^n)</option>
+                        <option value="O(n!)">O(n!)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary btn-block mt-0">Optimize</button>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center mt-3">
+                <div class="spinner-border text-primary" role="status" id="loadingSpinner">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+
+            <pre class="mt-4 bg-light p-3" id="result"></pre>
+        </form>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+
+        $(document).ready(function () {
+            $("#codeForm").submit(function (event) {
+                event.preventDefault();
+
+                // Show the spinner when the request starts
+                $("#loadingSpinner").show();
+
+                let codeSnippet = $("#code").val();
+                let desiredBigO = $("#bigO").val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/optimize",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        "code": codeSnippet,
+                        "bigO": desiredBigO
+                    }),
+                    success: function (response) {
+                        // Hide the spinner
+                        $("#loadingSpinner").hide();
+
+                        // Display the optimized code with a fade-in animation
+                        $("#result").text(response.optimized_code).addClass('animate__animated animate__fadeIn');
+
+                        // Apply syntax highlighting
+                        hljs.highlightBlock(document.getElementById('result'));
+                    },
+                    success: function (response) {
+                        $("#loadingSpinner").hide();
+                        $("#result").text(response.optimized_code).addClass('animate__animated animate__fadeIn');
+                        hljs.highlightBlock(document.getElementById('result'));
+                    },
+
+                    error: function () {
+                        // Hide the spinner
+                        $("#loadingSpinner").hide();
+
+                        // Display an error message
+                        $("#result").text("An error occurred. Please try again.");
+                    }
+                });
+            });
+        });
+
+
+
+    </script>
+</body>
+
+</html>
